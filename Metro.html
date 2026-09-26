@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Delhi Metro App</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background: #eef2f7;
+    color: #222;
+}
+
+header {
+    background: #c62828;
+    color: white;
+    padding: 25px;
+    text-align: center;
+}
+
+header h1 {
+    margin-bottom: 8px;
+}
+
+.container {
+    width: 95%;
+    max-width: 1000px;
+    margin: 25px auto;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #c62828;
+}
+
+select,
+input {
+    width: 100%;
+    padding: 13px;
+    margin: 8px 0 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+button {
+    padding: 13px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    margin: 5px;
+}
+
+.search-btn {
+    background: #c62828;
+    color: white;
+}
+
+.swap-btn {
+    background: #1565c0;
+    color: white;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+.result {
+    display: none;
+}
+
+.info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.box {
+    background: #f5f5f5;
+    padding: 20px;
+    text-align: center;
+    border-radius: 10px;
+}
+
+.box h3 {
+    color: #c62828;
+    margin-bottom: 8px;
+}
+
+.route {
+    margin-top: 20px;
+}
+
+.station {
+    padding: 12px;
+    margin: 5px 0;
+    background: #eeeeee;
+    border-left: 5px solid #c62828;
+    border-radius: 5px;
+}
+
+.station:first-child {
+    background: #e8f5e9;
+}
+
+.station:last-child {
+    background: #ffebee;
+}
+
+.search-station {
+    margin-top: 20px;
+}
+
+.station-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.station-item {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+}
+
+@media(max-width:700px) {
+
+    .info {
+        grid-template-columns: 1fr;
+    }
+
+    header h1 {
+        font-size: 25px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🚇 Delhi Metro App</h1>
+    <p>Route • Fare • Time • Stations</p>
+</header>
+
+<div class="container">
+
+    <!-- Route Search -->
+    <div class="card">
+
+        <h2>🔎 Find Metro Route</h2>
+
+        <label>From Station</label>
+
+        <select id="fromStation">
+            <option value="">Select Source</option>
+        </select>
+
+        <label>To Station</label>
+
+        <select id="toStation">
+            <option value="">Select Destination</option>
+        </select>
+
+        <button class="search-btn" onclick="findRoute()">
+            🔎 Find Route
+        </button>
+
+        <button class="swap-btn" onclick="swapStations()">
+            🔄 Swap
+        </button>
+
+    </div>
+
+
+    <!-- Result -->
+    <div class="card result" id="result">
+
+        <h2>🚇 Journey Details</h2>
+
+        <div class="info">
+
+            <div class="box">
+                <h3>Stations</h3>
+                <p id="stationCount">0</p>
+            </div>
+
+            <div class="box">
+                <h3>Time</h3>
+                <p id="time">0 minutes</p>
+            </div>
+
+            <div class="box">
+                <h3>Fare</h3>
+                <p id="fare">₹0</p>
+            </div>
+
+        </div>
+
+        <div class="route">
+
+            <h3>📍 Route</h3>
+
+            <div id="routeList"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Station Search -->
+    <div class="card">
+
+        <h2>📍 Metro Stations</h2>
+
+        <input
+            type="text"
+            id="stationSearch"
+            placeholder="Search station..."
+            onkeyup="searchStation()"
+        >
+
+        <div class="station-list" id="stationList"></div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+// Sample Delhi Metro station data
+// Stations are arranged in a simple route for this mini project.
+
+const stations = [
+
+    "Samaypur Badli",
+    "Rohini Sector 18",
+    "Rithala",
+    "Netaji Subhash Place",
+    "Keshav Puram",
+    "Kanhaiya Nagar",
+    "Shalimar Bagh",
+    "Azadpur",
+    "Model Town",
+    "Vishwavidyalaya",
+    "Civil Lines",
+    "Kashmere Gate",
+    "Chandni Chowk",
+    "Chawri Bazar",
+    "New Delhi",
+    "Rajiv Chowk",
+    "Patel Chowk",
+    "Central Secretariat",
+    "Udyog Bhawan",
+    "Lok Kalyan Marg",
+    "Jor Bagh",
+    "INA",
+    "AIIMS",
+    "Green Park",
+    "Hauz Khas",
+    "Malviya Nagar",
+    "Saket",
+    "Qutub Minar"
+
+];
+
+
+// Get HTML elements
+
+const fromStation = document.getElementById("fromStation");
+const toStation = document.getElementById("toStation");
+
+
+// Add stations to dropdown
+
+stations.forEach(function(station) {
+
+    let option1 = document.createElement("option");
+    option1.value = station;
+    option1.textContent = station;
+
+    fromStation.appendChild(option1);
+
+
+    let option2 = document.createElement("option");
+    option2.value = station;
+    option2.textContent = station;
+
+    toStation.appendChild(option2);
+
+});
+
+
+// Find route
+
+function findRoute() {
+
+    let from = fromStation.value;
+    let to = toStation.value;
+
+    if (from === "" || to === "") {
+
+        alert("Please select both stations.");
+
+        return;
+    }
+
+    if (from === to) {
+
+        alert("Source and destination cannot be same.");
+
+        return;
+    }
+
+
+    let fromIndex = stations.indexOf(from);
+    let toIndex = stations.indexOf(to);
+
+    let distance = Math.abs(toIndex - fromIndex);
+
+    let stationCount = distance;
+
+    // Approximate travel time
+    let travelTime = distance * 2;
+
+    // Approximate fare
+    let fare;
+
+    if (distance <= 2) {
+        fare = 10;
+    }
+    else if (distance <= 5) {
+        fare = 20;
+    }
+    else if (distance <= 8) {
+        fare = 30;
+    }
+    else if (distance <= 12) {
+        fare = 40;
+    }
+    else if (distance <= 18) {
+        fare = 50;
+    }
+    else {
+        fare = 60;
+    }
+
+
+    document.getElementById("stationCount").innerText =
+        stationCount + " stations";
+
+    document.getElementById("time").innerText =
+        travelTime + " minutes";
+
+    document.getElementById("fare").innerText =
+        "₹" + fare;
+
+
+    // Create route
+
+    let start = Math.min(fromIndex, toIndex);
+    let end = Math.max(fromIndex, toIndex);
+
+    let routeHTML = "";
+
+    for (let i = start; i <= end; i++) {
+
+        routeHTML += `
+            <div class="station">
+                🚇 ${stations[i]}
+            </div>
+        `;
+
+    }
+
+    document.getElementById("routeList").innerHTML =
+        routeHTML;
+
+
+    document.getElementById("result").style.display =
+        "block";
+
+}
+
+
+// Swap source and destination
+
+function swapStations() {
+
+    let temp = fromStation.value;
+
+    fromStation.value = toStation.value;
+
+    toStation.value = temp;
+
+}
+
+
+// Display station list
+
+function displayStations(list) {
+
+    let stationList =
+        document.getElementById("stationList");
+
+    stationList.innerHTML = "";
+
+    list.forEach(function(station) {
+
+        stationList.innerHTML += `
+            <div class="station-item">
+                🚇 ${station}
+            </div>
+        `;
+
+    });
+
+}
+
+
+// Search station
+
+function searchStation() {
+
+    let searchText =
+        document.getElementById("stationSearch")
+        .value
+        .toLowerCase();
+
+    let filteredStations =
+        stations.filter(function(station) {
+
+            return station
+                .toLowerCase()
+                .includes(searchText);
+
+        });
+
+    displayStations(filteredStations);
+
+}
+
+
+// Show all stations when page loads
+
+displayStations(stations);
+
+</script>
+
+</body>
+</html>
