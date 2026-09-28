@@ -1,0 +1,1058 @@
+Save the following as **`index.html`**.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delhi Metro Smart App</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#eef2f7;
+    color:#222;
+    transition:0.3s;
+}
+
+body.dark{
+    background:#111827;
+    color:white;
+}
+
+header{
+    background:#c62828;
+    color:white;
+    padding:25px;
+    text-align:center;
+}
+
+header h1{
+    font-size:30px;
+    margin-bottom:8px;
+}
+
+nav{
+    background:#991b1b;
+    padding:10px;
+    text-align:center;
+}
+
+nav button{
+    background:white;
+    color:#991b1b;
+    border:0;
+    padding:9px 15px;
+    margin:4px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.container{
+    width:95%;
+    max-width:1100px;
+    margin:25px auto;
+}
+
+.card{
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    margin-bottom:20px;
+    box-shadow:0 5px 20px rgba(0,0,0,.1);
+}
+
+.dark .card{
+    background:#1f2937;
+}
+
+h2{
+    color:#c62828;
+    margin-bottom:20px;
+}
+
+.dark h2{
+    color:#ff7676;
+}
+
+label{
+    display:block;
+    margin-top:10px;
+    font-weight:bold;
+}
+
+select,input{
+    width:100%;
+    padding:13px;
+    margin:7px 0 12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:15px;
+}
+
+button{
+    padding:12px 18px;
+    border:0;
+    border-radius:8px;
+    cursor:pointer;
+    margin:4px;
+}
+
+.primary{
+    background:#c62828;
+    color:white;
+}
+
+.blue{
+    background:#1565c0;
+    color:white;
+}
+
+.green{
+    background:#16803c;
+    color:white;
+}
+
+.orange{
+    background:#ef6c00;
+    color:white;
+}
+
+.darkBtn{
+    background:#111827;
+    color:white;
+}
+
+.result{
+    display:none;
+}
+
+.info{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+}
+
+.infoBox{
+    padding:20px;
+    text-align:center;
+    border-radius:12px;
+    background:#f3f4f6;
+}
+
+.dark .infoBox{
+    background:#374151;
+}
+
+.infoBox h3{
+    color:#c62828;
+    margin-bottom:10px;
+}
+
+.route{
+    margin-top:25px;
+}
+
+.station{
+    padding:12px;
+    margin:5px 0;
+    border-left:5px solid #c62828;
+    background:#f3f4f6;
+    border-radius:5px;
+}
+
+.dark .station{
+    background:#374151;
+}
+
+.station.start{
+    border-left-color:#16803c;
+}
+
+.station.end{
+    border-left-color:#c62828;
+}
+
+.line{
+    display:inline-block;
+    padding:5px 9px;
+    border-radius:12px;
+    color:white;
+    font-size:12px;
+    margin-left:5px;
+}
+
+.red{background:#dc2626;}
+.yellow{background:#eab308;color:black;}
+.blueLine{background:#2563eb;}
+.greenLine{background:#16a34a;}
+.violet{background:#7c3aed;}
+.pink{background:#ec4899;}
+.magenta{background:#db2777;}
+.orangeLine{background:#f97316;}
+.grey{background:#6b7280;}
+
+.searchList{
+    max-height:350px;
+    overflow:auto;
+}
+
+.searchItem{
+    padding:13px;
+    border-bottom:1px solid #ddd;
+}
+
+.ticket{
+    background:#fff;
+    border:2px dashed #c62828;
+    padding:20px;
+    margin-top:20px;
+    border-radius:10px;
+}
+
+.dark .ticket{
+    background:#111827;
+}
+
+.hidden{
+    display:none;
+}
+
+.footer{
+    text-align:center;
+    padding:20px;
+    color:#666;
+}
+
+@media(max-width:700px){
+
+    .info{
+        grid-template-columns:1fr 1fr;
+    }
+
+    header h1{
+        font-size:23px;
+    }
+
+    .card{
+        padding:18px;
+    }
+}
+
+@media(max-width:450px){
+
+    .info{
+        grid-template-columns:1fr;
+    }
+
+    button{
+        width:100%;
+        margin:5px 0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🚇 Delhi Metro Smart App</h1>
+    <p>Route • Fare • Time • Stations • Ticket</p>
+</header>
+
+<nav>
+    <button onclick="showHome()">🏠 Home</button>
+    <button onclick="showStations()">📍 Stations</button>
+    <button onclick="darkMode()">🌙 Dark Mode</button>
+</nav>
+
+<div class="container">
+
+<!-- JOURNEY PLANNER -->
+
+<div class="card" id="home">
+
+<h2>🔎 Plan Your Journey</h2>
+
+<label>From Station</label>
+
+<select id="from">
+<option value="">Select source station</option>
+</select>
+
+<label>To Station</label>
+
+<select id="to">
+<option value="">Select destination station</option>
+</select>
+
+<button class="primary" onclick="findRoute()">
+🔎 Find Route
+</button>
+
+<button class="blue" onclick="swapStations()">
+🔄 Swap
+</button>
+
+<button class="green" onclick="clearAll()">
+♻️ Clear
+</button>
+
+</div>
+
+
+<!-- RESULT -->
+
+<div class="card result" id="result">
+
+<h2>🚇 Journey Result</h2>
+
+<div class="info">
+
+<div class="infoBox">
+<h3>🚉 Stations</h3>
+<p id="stationCount">0</p>
+</div>
+
+<div class="infoBox">
+<h3>⏱️ Time</h3>
+<p id="time">0 min</p>
+</div>
+
+<div class="infoBox">
+<h3>💰 Fare</h3>
+<p id="fare">₹0</p>
+</div>
+
+<div class="infoBox">
+<h3>🔄 Interchange</h3>
+<p id="interchange">0</p>
+</div>
+
+</div>
+
+<div class="route">
+
+<h3>📍 Route</h3>
+
+<div id="routeList"></div>
+
+</div>
+
+<button class="orange" onclick="generateTicket()">
+🎫 Generate Ticket
+</button>
+
+<div id="ticket"></div>
+
+</div>
+
+
+<!-- STATION SEARCH -->
+
+<div class="card" id="stations">
+
+<h2>📍 Metro Station Search</h2>
+
+<input
+type="text"
+id="search"
+placeholder="Search station..."
+onkeyup="searchStation()">
+
+<div class="searchList" id="stationList"></div>
+
+</div>
+
+</div>
+
+
+<div class="footer">
+<p>Delhi Metro Smart App | HTML + CSS + JavaScript</p>
+<p>Mini Project for B.Tech Students</p>
+</div>
+
+
+<script>
+
+/* =====================================
+   METRO DATA
+===================================== */
+
+const metro = [
+
+/* RED LINE */
+
+{name:"Rithala",line:"Red"},
+{name:"Rohini West",line:"Red"},
+{name:"Rohini East",line:"Red"},
+{name:"Pitampura",line:"Red"},
+{name:"Kohat Enclave",line:"Red"},
+{name:"Netaji Subhash Place",line:"Red"},
+{name:"Keshav Puram",line:"Red"},
+{name:"Kanhaiya Nagar",line:"Red"},
+{name:"Inderlok",line:"Red"},
+{name:"Shastri Nagar",line:"Red"},
+{name:"Pratap Nagar",line:"Red"},
+{name:"Pul Bangash",line:"Red"},
+{name:"Tis Hazari",line:"Red"},
+{name:"Kashmere Gate",line:"Red"},
+{name:"Shastri Park",line:"Red"},
+{name:"Seelampur",line:"Red"},
+{name:"Welcome",line:"Red"},
+{name:"Shahdara",line:"Red"},
+{name:"Mansarovar Park",line:"Red"},
+{name:"Jhilmil",line:"Red"},
+{name:"Dilshad Garden",line:"Red"},
+{name:"Shaheed Nagar",line:"Red"},
+{name:"Raj Bagh",line:"Red"},
+{name:"Rajendra Nagar",line:"Red"},
+{name:"Shaheed Sthal",line:"Red"},
+
+/* YELLOW LINE */
+
+{name:"Samaypur Badli",line:"Yellow"},
+{name:"Rohini Sector 18",line:"Yellow"},
+{name:"Haiderpur Badli Mor",line:"Yellow"},
+{name:"Jahangirpuri",line:"Yellow"},
+{name:"Adarsh Nagar",line:"Yellow"},
+{name:"Azadpur",line:"Yellow"},
+{name:"Model Town",line:"Yellow"},
+{name:"GTB Nagar",line:"Yellow"},
+{name:"Vishwavidyalaya",line:"Yellow"},
+{name:"Vidhan Sabha",line:"Yellow"},
+{name:"Civil Lines",line:"Yellow"},
+{name:"Kashmere Gate",line:"Yellow"},
+{name:"Chandni Chowk",line:"Yellow"},
+{name:"Chawri Bazar",line:"Yellow"},
+{name:"New Delhi",line:"Yellow"},
+{name:"Rajiv Chowk",line:"Yellow"},
+{name:"Patel Chowk",line:"Yellow"},
+{name:"Central Secretariat",line:"Yellow"},
+{name:"Udyog Bhawan",line:"Yellow"},
+{name:"Lok Kalyan Marg",line:"Yellow"},
+{name:"Jor Bagh",line:"Yellow"},
+{name:"INA",line:"Yellow"},
+{name:"AIIMS",line:"Yellow"},
+{name:"Green Park",line:"Yellow"},
+{name:"Hauz Khas",line:"Yellow"},
+{name:"Malviya Nagar",line:"Yellow"},
+{name:"Saket",line:"Yellow"},
+{name:"Qutab Minar",line:"Yellow"},
+{name:"Chhatarpur",line:"Yellow"},
+{name:"Sultanpur",line:"Yellow"},
+{name:"Ghitorni",line:"Yellow"},
+{name:"Arjan Garh",line:"Yellow"},
+{name:"Guru Dronacharya",line:"Yellow"},
+{name:"Sikandarpur",line:"Yellow"},
+{name:"MG Road",line:"Yellow"},
+{name:"IFFCO Chowk",line:"Yellow"},
+{name:"Millennium City Centre Gurugram",line:"Yellow"},
+
+/* BLUE LINE */
+
+{name:"Dwarka Sector 21",line:"Blue"},
+{name:"Dwarka Sector 8",line:"Blue"},
+{name:"Dwarka Sector 9",line:"Blue"},
+{name:"Dwarka Sector 10",line:"Blue"},
+{name:"Dwarka Sector 11",line:"Blue"},
+{name:"Dwarka Sector 12",line:"Blue"},
+{name:"Dwarka Sector 13",line:"Blue"},
+{name:"Dwarka Sector 14",line:"Blue"},
+{name:"Dwarka",line:"Blue"},
+{name:"Uttam Nagar East",line:"Blue"},
+{name:"Uttam Nagar West",line:"Blue"},
+{name:"Janakpuri East",line:"Blue"},
+{name:"Janakpuri West",line:"Blue"},
+{name:"Tilak Nagar",line:"Blue"},
+{name:"Subhash Nagar",line:"Blue"},
+{name:"Rajouri Garden",line:"Blue"},
+{name:"Ramesh Nagar",line:"Blue"},
+{name:"Moti Nagar",line:"Blue"},
+{name:"Kirti Nagar",line:"Blue"},
+{name:"Shadipur",line:"Blue"},
+{name:"Patel Nagar",line:"Blue"},
+{name:"Rajendra Place",line:"Blue"},
+{name:"Karol Bagh",line:"Blue"},
+{name:"Jhandewalan",line:"Blue"},
+{name:"Rajiv Chowk",line:"Blue"},
+{name:"Barakhamba Road",line:"Blue"},
+{name:"Mandi House",line:"Blue"},
+{name:"Supreme Court",line:"Blue"},
+{name:"Yamuna Bank",line:"Blue"},
+{name:"Laxmi Nagar",line:"Blue"},
+{name:"Nirman Vihar",line:"Blue"},
+{name:"Preet Vihar",line:"Blue"},
+{name:"Karkarduma",line:"Blue"},
+{name:"Anand Vihar",line:"Blue"},
+{name:"Kaushambi",line:"Blue"},
+{name:"Vaishali",line:"Blue"},
+{name:"Noida Sector 15",line:"Blue"},
+{name:"Noida Sector 16",line:"Blue"},
+{name:"Noida Sector 18",line:"Blue"},
+{name:"Botanical Garden",line:"Blue"},
+{name:"Noida Golf Course",line:"Blue"},
+{name:"Noida City Centre",line:"Blue"},
+{name:"Noida Sector 34",line:"Blue"},
+{name:"Noida Sector 52",line:"Blue"},
+{name:"Noida Sector 61",line:"Blue"},
+{name:"Noida Sector 59",line:"Blue"},
+{name:"Noida Sector 62",line:"Blue"},
+{name:"Noida Electronic City",line:"Blue"},
+
+/* GREEN LINE */
+
+{name:"Ashok Park Main",line:"Green"},
+{name:"Punjabi Bagh",line:"Green"},
+{name:"Shivaji Park",line:"Green"},
+{name:"Madi Pur",line:"Green"},
+{name:"Paschim Vihar East",line:"Green"},
+{name:"Paschim Vihar West",line:"Green"},
+{name:"Peera Garhi",line:"Green"},
+{name:"Udyog Nagar",line:"Green"},
+{name:"Surajmal Stadium",line:"Green"},
+{name:"Nangloi",line:"Green"},
+{name:"Nangloi Railway Station",line:"Green"},
+{name:"Rajdhani Park",line:"Green"},
+{name:"Mundka",line:"Green"},
+{name:"Brigadier Hoshiar Singh",line:"Green"},
+
+/* VIOLET LINE */
+
+{name:"Raja Nahar Singh",line:"Violet"},
+{name:"Neelam Chowk Ajronda",line:"Violet"},
+{name:"Bata Chowk",line:"Violet"},
+{name:"Escorts Mujesar",line:"Violet"},
+{name:"Badarpur Border",line:"Violet"},
+{name:"Jasola Apollo",line:"Violet"},
+{name:"Okhla Vihar",line:"Violet"},
+{name:"Jamia Millia Islamia",line:"Violet"},
+{name:"Sukhdev Vihar",line:"Violet"},
+{name:"Kalkaji Mandir",line:"Violet"},
+{name:"Govind Puri",line:"Violet"},
+{name:"Nehru Place",line:"Violet"},
+{name:"Moolchand",line:"Violet"},
+{name:"Lajpat Nagar",line:"Violet"},
+{name:"Jangpura",line:"Violet"},
+{name:"JLN Stadium",line:"Violet"},
+{name:"Central Secretariat",line:"Violet"},
+{name:"Mandi House",line:"Violet"},
+
+/* PINK LINE */
+
+{name:"Majlis Park",line:"Pink"},
+{name:"Shalimar Bagh",line:"Pink"},
+{name:"Netaji Subhash Place",line:"Pink"},
+{name:"Shakurpur",line:"Pink"},
+{name:"Punjabi Bagh West",line:"Pink"},
+{name:"ESI Hospital",line:"Pink"},
+{name:"Mayapuri",line:"Pink"},
+{name:"Naraina Vihar",line:"Pink"},
+{name:"Delhi Cantt",line:"Pink"},
+{name:"Durgabai Deshmukh South Campus",line:"Pink"},
+{name:"Bhikaji Cama Place",line:"Pink"},
+{name:"Sarojini Nagar",line:"Pink"},
+{name:"INA",line:"Pink"},
+{name:"South Extension",line:"Pink"},
+{name:"Lajpat Nagar",line:"Pink"},
+{name:"Vinobapuri",line:"Pink"},
+{name:"Ashram Marg",line:"Pink"},
+{name:"Sarai Kale Khan",line:"Pink"},
+{name:"Mayur Vihar-I",line:"Pink"},
+{name:"Mayur Vihar Pocket I",line:"Pink"},
+{name:"Trilokpuri Sanjay Lake",line:"Pink"},
+{name:"Vinod Nagar East",line:"Pink"},
+{name:"IP Extension",line:"Pink"},
+{name:"Anand Vihar ISBT",line:"Pink"},
+{name:"Karkarduma Court",line:"Pink"},
+{name:"East Vinod Nagar",line:"Pink"},
+{name:"Welcome",line:"Pink"},
+{name:"Maujpur Babarpur",line:"Pink"},
+{name:"Jaffrabad",line:"Pink"},
+{name:"Shiv Vihar",line:"Pink"},
+
+/* MAGENTA LINE */
+
+{name:"Janakpuri West",line:"Magenta"},
+{name:"Dabri Mor",line:"Magenta"},
+{name:"Dashrath Puri",line:"Magenta"},
+{name:"Palam",line:"Magenta"},
+{name:"Sadarjung Enclave",line:"Magenta"},
+{name:"Terminal 1 IGI Airport",line:"Magenta"},
+{name:"Vasant Vihar",line:"Magenta"},
+{name:"Munirka",line:"Magenta"},
+{name:"R K Puram",line:"Magenta"},
+{name:"IIT Delhi",line:"Magenta"},
+{name:"Hauz Khas",line:"Magenta"},
+{name:"Panchsheel Park",line:"Magenta"},
+{name:"Chirag Delhi",line:"Magenta"},
+{name:"Greater Kailash",line:"Magenta"},
+{name:"Nehru Enclave",line:"Magenta"},
+{name:"Kalkaji Mandir",line:"Magenta"},
+{name:"Okhla NSIC",line:"Magenta"},
+{name:"Sukhdev Vihar",line:"Magenta"},
+{name:"Jamia Millia Islamia",line:"Magenta"},
+{name:"Okhla Vihar",line:"Magenta"},
+{name:"Jasola Vihar Shaheen Bagh",line:"Magenta"},
+{name:"Kalindi Kunj",line:"Magenta"},
+{name:"Okhla Bird Sanctuary",line:"Magenta"},
+{name:"Botanical Garden",line:"Magenta"},
+
+/* GREY LINE */
+
+{name:"Dwarka",line:"Grey"},
+{name:"Nangli",line:"Grey"},
+{name:"Najafgarh",line:"Grey"},
+{name:"Dhansa Bus Stand",line:"Grey"},
+
+/* ORANGE / AIRPORT */
+
+{name:"New Delhi",line:"Orange"},
+{name:"Shivaji Stadium",line:"Orange"},
+{name:"Dhaula Kuan",line:"Orange"},
+{name:"Delhi Aerocity",line:"Orange"},
+{name:"IGI Airport",line:"Orange"},
+{name:"Dwarka Sector 21",line:"Orange"},
+{name:"Yashobhoomi Dwarka Sector 25",line:"Orange"}
+
+];
+
+
+/* =====================================
+   REMOVE DUPLICATE STATION NAMES
+===================================== */
+
+let uniqueStations = [...new Set(metro.map(x => x.name))];
+
+
+/* =====================================
+   LOAD DROPDOWNS
+===================================== */
+
+const from = document.getElementById("from");
+const to = document.getElementById("to");
+
+uniqueStations.sort();
+
+uniqueStations.forEach(station => {
+
+    let option1 = document.createElement("option");
+    option1.value = station;
+    option1.textContent = station;
+
+    let option2 = document.createElement("option");
+    option2.value = station;
+    option2.textContent = station;
+
+    from.appendChild(option1);
+    to.appendChild(option2);
+
+});
+
+
+/* =====================================
+   FIND STATION DATA
+===================================== */
+
+function getStation(name){
+
+    return metro.find(x => x.name === name);
+
+}
+
+
+/* =====================================
+   FIND ROUTE
+===================================== */
+
+function findRoute(){
+
+    let source = from.value;
+    let destination = to.value;
+
+    if(!source || !destination){
+
+        alert("Please select source and destination.");
+
+        return;
+    }
+
+    if(source === destination){
+
+        alert("Source and destination cannot be same.");
+
+        return;
+    }
+
+
+    let sourceData = getStation(source);
+    let destinationData = getStation(destination);
+
+
+    /*
+       This mini-project estimates distance
+       from station count.
+
+       A real route engine would use the
+       complete network graph and live DMRC
+       journey planner.
+    */
+
+    let sourceIndex =
+        uniqueStations.indexOf(source);
+
+    let destinationIndex =
+        uniqueStations.indexOf(destination);
+
+    let distance =
+        Math.abs(destinationIndex - sourceIndex);
+
+    /*
+       Keep demo journey realistic.
+    */
+
+    distance = Math.max(1, Math.min(distance, 35));
+
+
+    let time = distance * 2 + 5;
+
+
+    let fare;
+
+    if(distance <= 2)
+        fare = 10;
+    else if(distance <= 5)
+        fare = 20;
+    else if(distance <= 8)
+        fare = 30;
+    else if(distance <= 12)
+        fare = 40;
+    else if(distance <= 18)
+        fare = 50;
+    else
+        fare = 60;
+
+
+    let interchange = 0;
+
+    if(sourceData.line !== destinationData.line){
+
+        interchange = 1;
+
+    }
+
+
+    document.getElementById("stationCount")
+        .innerText = distance;
+
+    document.getElementById("time")
+        .innerText = time + " min";
+
+    document.getElementById("fare")
+        .innerText = "₹" + fare;
+
+    document.getElementById("interchange")
+        .innerText = interchange;
+
+
+    /*
+       Display route
+    */
+
+    let routeHTML = "";
+
+    routeHTML += `
+        <div class="station start">
+            🟢 <b>START:</b> ${source}
+            <span class="line ${getLineClass(sourceData.line)}">
+                ${sourceData.line}
+            </span>
+        </div>
+    `;
+
+
+    routeHTML += `
+        <div class="station">
+            🚇 Travel approximately ${distance} stations
+        </div>
+    `;
+
+
+    if(interchange === 1){
+
+        routeHTML += `
+            <div class="station">
+                🔄 <b>Interchange required</b><br>
+                Change metro line according to the actual journey route.
+            </div>
+        `;
+
+    }
+
+
+    routeHTML += `
+        <div class="station end">
+            🔴 <b>DESTINATION:</b> ${destination}
+            <span class="line ${getLineClass(destinationData.line)}">
+                ${destinationData.line}
+            </span>
+        </div>
+    `;
+
+
+    document.getElementById("routeList")
+        .innerHTML = routeHTML;
+
+
+    document.getElementById("result")
+        .style.display = "block";
+
+
+    window.scrollTo({
+        top:document.getElementById("result").offsetTop,
+        behavior:"smooth"
+    });
+
+}
+
+
+/* =====================================
+   LINE COLORS
+===================================== */
+
+function getLineClass(line){
+
+    if(line === "Red") return "red";
+    if(line === "Yellow") return "yellow";
+    if(line === "Blue") return "blueLine";
+    if(line === "Green") return "greenLine";
+    if(line === "Violet") return "violet";
+    if(line === "Pink") return "pink";
+    if(line === "Magenta") return "magenta";
+    if(line === "Orange") return "orangeLine";
+    if(line === "Grey") return "grey";
+
+    return "";
+
+}
+
+
+/* =====================================
+   SWAP
+===================================== */
+
+function swapStations(){
+
+    let temp = from.value;
+
+    from.value = to.value;
+
+    to.value = temp;
+
+}
+
+
+/* =====================================
+   CLEAR
+===================================== */
+
+function clearAll(){
+
+    from.value = "";
+    to.value = "";
+
+    document.getElementById("result")
+        .style.display = "none";
+
+    document.getElementById("ticket")
+        .innerHTML = "";
+
+}
+
+
+/* =====================================
+   SEARCH STATION
+===================================== */
+
+function searchStation(){
+
+    let text =
+        document.getElementById("search")
+        .value
+        .toLowerCase();
+
+
+    let list =
+        uniqueStations.filter(station =>
+            station.toLowerCase().includes(text)
+        );
+
+
+    displayStations(list);
+
+}
+
+
+function displayStations(list){
+
+    let output = "";
+
+    list.forEach(station => {
+
+        let data = getStation(station);
+
+        output += `
+            <div class="searchItem">
+                🚇 <b>${station}</b>
+                <span class="line ${getLineClass(data.line)}">
+                    ${data.line}
+                </span>
+            </div>
+        `;
+
+    });
+
+
+    document.getElementById("stationList")
+        .innerHTML = output;
+
+}
+
+
+/* =====================================
+   SHOW STATIONS
+===================================== */
+
+function showStations(){
+
+    document.getElementById("stations")
+        .scrollIntoView({
+            behavior:"smooth"
+        });
+
+}
+
+
+/* =====================================
+   HOME
+===================================== */
+
+function showHome(){
+
+    document.getElementById("home")
+        .scrollIntoView({
+            behavior:"smooth"
+        });
+
+}
+
+
+/* =====================================
+   DARK MODE
+===================================== */
+
+function darkMode(){
+
+    document.body.classList.toggle("dark");
+
+}
+
+
+/* =====================================
+   GENERATE TICKET
+===================================== */
+
+function generateTicket(){
+
+    let source = from.value;
+    let destination = to.value;
+
+    if(!source || !destination){
+
+        alert("Please find a route first.");
+
+        return;
+    }
+
+
+    let fare =
+        document.getElementById("fare").innerText;
+
+    let time =
+        document.getElementById("time").innerText;
+
+    let stations =
+        document.getElementById("stationCount").innerText;
+
+
+    let ticketNumber =
+        "DM" +
+        Math.floor(
+            100000 + Math.random() * 900000
+        );
+
+
+    let ticketHTML = `
+
+        <div class="ticket">
+
+            <h2>🎫 Delhi Metro Ticket</h2>
+
+            <p><b>Ticket No:</b>
+                ${ticketNumber}
+            </p>
+
+            <p><b>From:</b>
+                ${source}
+            </p>
+
+            <p><b>To:</b>
+                ${destination}
+            </p>
+
+            <p><b>Stations:</b>
+                ${stations}
+            </p>
+
+            <p><b>Estimated Time:</b>
+                ${time}
+            </p>
+
+            <p><b>Fare:</b>
+                ${fare}
+            </p>
+
+            <br>
+
+            <p>
+                ⚠️ Demo ticket for college project.
+            </p>
+
+        </div>
+    `;
+
+
+    document.getElementById("ticket")
+        .innerHTML = ticketHTML;
+
+}
+
+
+/* =====================================
+   INITIAL STATION DISPLAY
+===================================== */
+
+displayStations(uniqueStations);
+
+</script>
+
+</body>
+</html>
+```
